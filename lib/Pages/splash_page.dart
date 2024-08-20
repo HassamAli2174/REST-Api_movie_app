@@ -1,4 +1,10 @@
+import 'dart:convert';
+//packages
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
+//model
+import '../models/app_config.dart';
 
 class SplashPage extends StatefulWidget {
   final VoidCallback onInitializationComplete;
@@ -12,8 +18,23 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 1))
-        .then((_) => widget.onInitializationComplete());
+    Future.delayed(Duration(seconds: 1)).then(
+      (_) => _setup(context).then((_) => widget.onInitializationComplete()),
+    );
+  }
+
+  Future<void> _setup(context) async {
+    final getIt = GetIt.instance;
+    final configFile = await rootBundle.loadString('assets/config/main.json');
+    final configData = jsonDecode(configFile);
+
+    getIt.registerSingleton(
+      AppConfig(
+        BASE_API_URL: configData['BASE_API_URL'],
+        BASE_IMAGE_API_URL: configData['BASE_IMAGE_API_URL'],
+        API_KEY: configData['API_KEY'],
+      ),
+    );
   }
 
   @override
